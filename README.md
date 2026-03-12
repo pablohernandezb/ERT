@@ -1,60 +1,157 @@
+# ESOT — Episodes of State Ownership Transformation
 
+An R package to identify, explore, and visualize **Episodes of State Ownership Transformation (ESOT)** using V-Dem data. The package detects **privatization** (movement towards a market economy) and **statization** (movement towards greater state ownership) episodes based on the V-Dem variable `v2clstown_osp` (State Ownership of the Economy, 0–4 scale).
 
-An R package to load, explore, and work with the Episodes of Regime Transformation (ERT) dataset - a project of the [V-Dem Institute](https://www.v-dem.net/). This forked version includes support for localization in Spanish (`"es"`).
+> **Note:** This package is built upon the methodology and codebase of the **[ERT — Episodes of Regime Transformation](https://github.com/vdeminstitute/ERT)** package, developed by the [V-Dem Institute](https://www.v-dem.net/). The episode-detection algorithm is directly adapted from ERT's approach to identifying regime transitions, scaled and re-oriented for economic ownership dynamics. Full credit for the original framework goes to the ERT authors (see [Citation](#citation)).
 
-## Episodes of Regime Transformation (ERT) ##
+---
 
-#### Load, explore, and work with the ERT dataset (for details see also the [ERT Codebook](https://github.com/vdeminstitute/ERT/blob/master/inst/ERT_codebook.pdf)): ####
+## Installation
 
-* NOTE: for non-R users we provide [the ERT dataset here as csv. or .xlsx file](https://github.com/vdeminstitute/ERT/blob/master/inst) - however, we recommend loading the ERT dataset via the package since one huge advantage of the package is that it allows to flexibly set parameters for generating the episodes.
-* RELEASES: ERT 15.0 is based on the V-Dem dataset v15. For earlier releases using earlier versions of the V-Dem dataset, see the "Releases" column on the right sight. 
-
-#### Functions ####
-* `get_eps`: Identify episodes of regime transitions (autocratization, democratization) in the most recent V-dem data set. Autocratization is defined as any movement towards autocracy which starts within democracies or autocracies [(cf. Maerz et al., Journal of Peace Research, 2023](https://journals.sagepub.com/doi/10.1177/00223433231168192) and [Lührmann and Lindberg, Democratization, 2019)](https://www.tandfonline.com/doi/full/10.1080/13510347.2019.1582029). Democratization is defined as any movement towards democracy which starts in autocracies or democracies [(cf. Wilson et al., 2022)](https://www.cambridge.org/core/journals/political-science-research-and-methods/article/episodes-of-liberalization-in-autocracies-a-new-approach-to-quantitatively-studying-democratization/CD86064BF11FEEC8BD9354921E3C9BE3)
-* `find_overlap`: Find potential overlaps between episodes of democratization and autocratization which may occur depending on how the thresholds are set.
-* `plot_episodes`: Plot Episodes of Regime Transitions (ERT) over time for a selected country.
-* `plot_all`: Plot share or absolute number of all countries in Episodes of Regime Transitions (ERT) over time.
-
-#### ShinyApp for validity tests ####
-
-* For additional transparency, we provide a [ShinyApp for validation](https://episodes.shinyapps.io/validation/) which allows users to flexibly adjust the ERT parameters and to test how changes to the default thresholds affect the episodes and their validity.
-
-## Installation ##
-
-```
-# Install the development version of the ERT package 
-# (this package is an ongoing project, 
-# keep checking for updates)
-
-# First, you need to have the devtools package installed
+```r
+# Install the development version from GitHub
+# (requires the devtools package)
 install.packages("devtools")
-# now, install the ERT package directly from GitHub
-devtools::install_github("pablohernandezb/ERT")
-
-# NOTE: make sure you have an updated R version and
-# - since the package is a development version - 
-# an updated version of xcode (Mac), rtools (Windows), r-base-dev (Linux)
-# installed. If you have troubles with the installation 
-# write to contact@v-dem.net at the V-Dem Institute.
-
+devtools::install_github("your-username/ESOT")
 ```
 
-## Localization ##
+> Make sure you have an up-to-date R installation and the appropriate build tools:
+> - **Windows**: [Rtools](https://cran.r-project.org/bin/windows/Rtools/)
+> - **macOS**: Xcode Command Line Tools
+> - **Linux**: `r-base-dev`
 
-This fork of the ERT package supports localization for plot labels and country names in English (`"en"`) and Spanish (`"es"`). You can set the language for labels and country names using the `lang` argument in plotting functions. It is not mandatory to include the `lang` argument, the default is set to be English (`"en"`).
+---
 
-#### Internal Functions ####
+## The State Ownership Index
 
-* `get_label`: Retrieve localized labels for plot elements and messages, supporting multiple languages.
-* `get_country_name`: Retrieve localized country names for use in plots and summaries.
+The package uses the V-Dem variable **`v2clstown_osp`** (State Ownership of the Economy), which ranges from **0** (high state ownership / planned economy) to **4** (low state ownership / market economy).
 
-**Example:**
+Economy types are derived as follows:
+
+| Value range        | Economy type                    |
+|--------------------|---------------------------------|
+| `v2clstown_osp < 1`  | Planned economy (0)            |
+| `1 ≤ v2clstown_osp < 2` | State-dominated mixed economy (1) |
+| `2 ≤ v2clstown_osp < 3` | Market-dominated mixed economy (2) |
+| `v2clstown_osp ≥ 3`  | Market economy (3)             |
+
+---
+
+## Functions
+
+### `get_eps()`
+Identifies episodes of privatization and statization for all countries in the most recent V-Dem dataset.
+
+```r
+# Get episodes with default parameters
+episodes <- get_eps()
+
+# Customize thresholds
+episodes <- get_eps(start_incl = 0.04,
+                    cum_incl   = 0.4,
+                    year_turn  = 0.12,
+                    cum_turn   = 0.4,
+                    tolerance  = 5)
 ```
-# Plot all episodes of democratization and autocratization in Spanish
+
+**Parameters** (all scaled to the 0–4 range of `v2clstown_osp`, following ERT's methodology):
+
+| Parameter    | Description                                                          | Default |
+|--------------|----------------------------------------------------------------------|---------|
+| `start_incl` | Minimum annual change to trigger an episode onset                   | `0.04`  |
+| `cum_incl`   | Minimum cumulative change to qualify as a manifest episode          | `0.4`   |
+| `year_turn`  | Annual change in opposite direction to trigger episode termination  | `0.12`  |
+| `cum_turn`   | Cumulative change in opposite direction to trigger termination      | `0.4`   |
+| `tolerance`  | Number of years of tolerance for stasis or reverse movement         | `5`     |
+
+**Episode outcomes — Privatization:**
+
+| Code | Outcome                     |
+|------|-----------------------------|
+| 1    | Market transition           |
+| 2    | Preempted market transition |
+| 3    | Stabilized planned economy  |
+| 4    | Reverted privatization      |
+| 5    | Deepened market economy     |
+| 6    | Uncertain outcome           |
+
+**Episode outcomes — Statization:**
+
+| Code | Outcome                    |
+|------|----------------------------|
+| 1    | Market collapse            |
+| 2    | Preempted market collapse  |
+| 3    | Diminished market economy  |
+| 4    | Averted statization        |
+| 5    | Deepened planned economy   |
+| 6    | Uncertain outcome          |
+
+---
+
+### `find_overlap()`
+Checks for and reports overlapping privatization and statization episodes.
+
+```r
+overlap <- find_overlap()
+```
+
+---
+
+### `plot_episodes()`
+Plots privatization and statization episodes over time for a selected country.
+
+```r
+# Plot episodes for Russia between 1950 and 2010
+plot_episodes(country = "Russia", years = c(1950, 2010))
+
+# Plot in Spanish
+plot_episodes(country = "Venezuela", years = c(1960, 2023), lang = "es")
+```
+
+---
+
+### `plot_all()`
+Plots the global number or share of countries undergoing privatization or statization episodes per year.
+
+```r
+# Absolute number of countries
+plot_all(abs = TRUE, years = c(1950, 2023))
+
+# Share of countries (%)
+plot_all(abs = FALSE, years = c(1950, 2023))
+
+# In Spanish
 plot_all(lang = "es")
-
-# Plot the democratization and autocratization episodes for Venezuela in Spanish
-plot_episodes_test(country = c("Venezuela"), years = c(1900, 2023), lang = "es")
 ```
 
-For more details, see the documentation. Feel free to reach out <hi@pablohernandezb.dev> if you have any recommendations, comments or questions!
+---
+
+## Localization
+
+Both `plot_episodes()` and `plot_all()` support localized labels via the `lang` argument:
+
+| Language | Code  |
+|----------|-------|
+| English  | `"en"` (default) |
+| Spanish  | `"es"` |
+
+---
+
+## Citation
+
+If you use the ESOT package, please cite both this package and the original ERT framework on which it is based:
+
+**ESOT package:**
+> Maerz, Seraphine, Amanda Edgell, Joshua Krusell, Laura Maxwell, and Sebastian Hellmeier. *ESOT — Episodes of State Ownership Transformation R package*. 2025.
+
+**Original ERT framework (required credit):**
+> Maerz, Seraphine, Amanda Edgell, Joshua Krusell, Laura Maxwell, and Sebastian Hellmeier. *ERT — Episodes of Regime Transformation R package*. Varieties of Democracy (V-Dem) Project. 2025. <https://github.com/vdeminstitute/ERT>
+
+**V-Dem dataset:**
+> Coppedge, Michael et al. *V-Dem Dataset*. Varieties of Democracy (V-Dem) Project. <https://www.v-dem.net>
+
+---
+
+## License
+
+GPL-3

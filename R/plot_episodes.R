@@ -1,11 +1,11 @@
-#' Plot Episodes of Regime Transformation (ERT) over time.
+#' Plot Episodes of State Ownership Transformation (ESOT) over time.
 #'
-#' `plot_episodes` plots Episodes of Regime Transformation (ERT) over time for a selected country and a selected time frame.
+#' `plot_episodes` plots Episodes of State Ownership Transformation (ESOT) over time for a selected country and a selected time frame.
 #'
 #' This function is a wrapper for [ggplot2:ggplot()] and produces a plot that shows
-#' democratization and autocratization episodes for a selected country over time.
-#' The legend includes information on the start and end data of each episode,
-#' as well as the episode outcome. The function calls the [ERT:get_eps()] function
+#' privatization and statization episodes for a selected country over time.
+#' The legend includes information on the start and end date of each episode,
+#' as well as the episode outcome. The function calls the [ESOT:get_eps()] function
 #' to identify episodes.
 #'
 #' @param years Vector with two numeric values indicating the minimum and maximum year to be plotted.
@@ -13,38 +13,20 @@
 #' @param country Character vector containing the country for which episodes should be shown. Only entries from the
 #'  country_name column in the V-Dem data set are accepted.
 #'
-#' @param start_incl What is the minimum annual change on V-Dem's Electoral Democracy Index (EDI) necessary to trigger an episode? 
-#' This is the absolute value of the first difference in the EDI required for the onset 
-#' of either a democratization (+) or autocratization episode (–).
+#' @param start_incl What is the minimum annual change on v2clstown_osp necessary to trigger an episode?
+#' Default is 0.04 (scaled from ERT's 0.01 for the 0-4 range).
 #'
-#' @param cum_incl What is the minimum amount of total change on the EDI necessary to constitute a manifest episode?
-#' A potential episode might be a period involving any amount of changes over a period following an annual change equal 
-#' to the start inclusion (e.g. 0.01). To identify substantial changes, we set a cumulative inclusion threshold. 
-#' This is the absolute value of the total amount of change needed on the EDI to be considered manifest.
+#' @param cum_incl What is the minimum amount of total change on v2clstown_osp necessary to constitute a manifest episode?
+#' Default is 0.4 (scaled from ERT's 0.1 for the 0-4 range).
 #'
-#' @param year_turn What is the amount of annual change in the opposite direction to trigger the termination of an episode? 
-#' An episode may end when the case suddenly moves in the opposite direction. 
-#' For example, during an episode of democratization, a country may experience a sudden drop on the EDI. 
-#' This could signal the onset of an autocratization episode. To avoid overlap between episodes, 
-#' we set the absolute value of a change in the opposite direction on the EDI 
-#' as a trigger for the termination of an episode. \emph{Note: Advanced users who wish to remove this criteria altogether 
-#' should set the value of year\_turn equal to cum\_turn. 
-#' Setting this to zero would allow for an episode to terminate when any year of no change is encountered.}
-#' 
+#' @param year_turn What is the amount of annual change in the opposite direction to trigger the termination of an episode?
+#' Default is 0.12 (scaled from ERT's 0.03 for the 0-4 range).
+#'
 #' @param cum_turn What is the amount of gradual change in the opposite direction to trigger the termination of an episode?
-#' An episode may end when the case begins moving in the opposite direction gradually. For example, 
-#' during an episode of democratization, a country may experience a gradual drop on the EDI over a number of years 
-#' that signals democratization has ended. This could also signal the onset of an autocratization episode. 
-#' To avoid overlap between episodes, we set the absolute value of a gradual change in the opposite direction 
-#' on the EDI over the tolerance period (e.g. 5 years) as a trigger for the termination of an episode.
+#' Default is 0.4 (scaled from ERT's 0.1 for the 0-4 range).
 #'
 #' @param tolerance What is the number of years considered as tolerance for stasis or a gradual movement in the opposite direction?
-#' The tolerance defines the number of years an episode is allowed to remain in stasis 
-#' (i.e. no more movements equal to the start inclusion) and/or move in the opposite direction before it is terminated. 
-#' This parameter also defines the number of years necessary for a case to be considered a democratic breakdown or 
-#' stabilized electoral autocracy. \emph{Therefore, care is necessary when manipulating the default value. 
-#' This could lead to large changes in the composition of episodes. 
-#' We set the default to 5 years because this is the typical amount for an electoral cycle for most countries.}
+#' Default is 5 years.
 #'
 #' @param data The data based on which the episodes are identified.
 #' By default the most recent vdem data set.
@@ -59,9 +41,9 @@
 #' @examples
 #' \dontrun{
 #'
-#' # Plot episodes for Belgium between 1910 and 2010.
+#' # Plot episodes for Russia between 1910 and 2010.
 #'
-#'  plot_episodes(country = c("Belgium"),
+#'  plot_episodes(country = c("Russia"),
 #'                years = c(1910, 2010))
 #' }
 #' @export
@@ -70,11 +52,11 @@ localizations <- list(
   en = list(
     episode = "Episode",
     episode_type = "Episode type",
-    autocratization = "Autocratization",
-    democratization = "Democratization",
+    statization = "Statization",
+    privatization = "Privatization",
     overlap = "Overlap",
     year = "Year",
-    edi = "Electoral Democracy Index",
+    soi = "State Ownership Index (v2clstown_osp)",
     no_episodes = "No episodes during selected period.",
     warning_overlap = "Warning: Some episodes overlap!",
     stop_more_than_one_country = "Error: More than one country selected",
@@ -89,26 +71,26 @@ localizations <- list(
     stop_cum_turn_format = "Error: 'cum_turn' must be a numeric value",
     stop_tolerance_format = "Error: 'tolerance' must be a numeric value",
     outcome_censored = "Outcome censored",
-    outcome_dem_transition = "Democratic transition",
-    outcome_dem_preempted = "Preempted democratic transition",
-    outcome_dem_stabilized = "Stabilized electoral autocracy",
-    outcome_dem_reverted = "Reverted liberalization",
-    outcome_dem_deepened = "Deepened democracy",
-    outcome_aut_censored = "Outcome censored",
-    outcome_aut_breakdown = "Democratic breakdown",
-    outcome_aut_preempted = "Preempted democratic breakdown",
-    outcome_aut_diminished = "Diminished democracy",
-    outcome_aut_averted = "Averted regression",
-    outcome_aut_regressed = "Regressed autocracy"
+    outcome_priv_transition = "Market transition",
+    outcome_priv_preempted = "Preempted market transition",
+    outcome_priv_stabilized = "Stabilized planned economy",
+    outcome_priv_reverted = "Reverted privatization",
+    outcome_priv_deepened = "Deepened market economy",
+    outcome_stat_censored = "Outcome censored",
+    outcome_stat_breakdown = "Market collapse",
+    outcome_stat_preempted = "Preempted market collapse",
+    outcome_stat_diminished = "Diminished market economy",
+    outcome_stat_averted = "Averted statization",
+    outcome_stat_regressed = "Deepened planned economy"
   ),
   es = list(
     episode = "Episodio",
     episode_type = "Tipo de episodio",
-    autocratization = "Autocratización",
-    democratization = "Democratización",
+    statization = "Estatización",
+    privatization = "Privatización",
     overlap = "Superposición",
     year = "Año",
-    edi = "Índice de Democracia Electoral",
+    soi = "Índice de Propiedad Estatal (v2clstown_osp)",
     no_episodes = "No hay episodios durante el período seleccionado.",
     warning_overlap = "¡Advertencia: Algunos episodios se superponen!",
     stop_more_than_one_country = "Error: Se seleccionó más de un país",
@@ -123,16 +105,16 @@ localizations <- list(
     stop_cum_turn_format = "Error: 'cum_turn' debe ser un valor numérico",
     stop_tolerance_format = "Error: 'tolerance' debe ser un valor numérico",
     outcome_censored = "Resultado truncado",
-    outcome_dem_transition = "Transición democrática",
-    outcome_dem_preempted = "Transición democrática prevenida",
-    outcome_dem_stabilized = "Autocracia electoral estabilizada",
-    outcome_dem_reverted = "Liberalización revertida",
-    outcome_dem_deepened = "Democracia profundizada",
-    outcome_aut_breakdown = "Ruptura democrática",
-    outcome_aut_preempted = "Ruptura democrática prevenida",
-    outcome_aut_diminished = "Democracia disminuida",
-    outcome_aut_averted = "Regresión evitada",
-    outcome_aut_regressed = "Autocracia regresiva"
+    outcome_priv_transition = "Transición al mercado",
+    outcome_priv_preempted = "Transición al mercado prevenida",
+    outcome_priv_stabilized = "Economía planificada estabilizada",
+    outcome_priv_reverted = "Privatización revertida",
+    outcome_priv_deepened = "Economía de mercado profundizada",
+    outcome_stat_breakdown = "Colapso del mercado",
+    outcome_stat_preempted = "Colapso del mercado prevenido",
+    outcome_stat_diminished = "Economía de mercado disminuida",
+    outcome_stat_averted = "Estatización evitada",
+    outcome_stat_regressed = "Economía planificada profundizada"
   )
 )
 
@@ -531,22 +513,22 @@ get_country_name <- function(name, lang = "en") {
 
 plot_episodes <- function(years = c(1900, 2023),
                           country = c("Sweden"),
-                          start_incl  = 0.01,
-                          cum_incl  = 0.1,
-                          year_turn = 0.03,
-                          cum_turn = 0.1,
+                          start_incl  = 0.04,
+                          cum_incl  = 0.4,
+                          year_turn = 0.12,
+                          cum_turn = 0.4,
                           tolerance = 5,
-                          data = ERT::vdem,
+                          data = ESOT::vdem,
                           lang = "en") {
-  
-  eps <- ERT::get_eps(data = data,
+
+  eps <- ESOT::get_eps(data = data,
                       start_incl = start_incl,
                       cum_incl = cum_incl,
                       year_turn = year_turn,
                       cum_turn = cum_turn,
                       tolerance = tolerance)
-  
-  
+
+
   if(!(is.numeric(years) && length(years) == 2 && years[2] > years[1]))
     stop(get_label("stop_years_format", lang))
 
@@ -579,127 +561,119 @@ plot_episodes <- function(years = c(1900, 2023),
 
   if(!(is.numeric(tolerance) && length(tolerance) == 1))
     stop(get_label("stop_tolerance_format", lang))
-  
-  
-  year <- country_name <- dem_ep <- aut_ep <- overlap_eps <- country_text_id <- v2x_polyarchy <-
-    ep_type <- episode <- vdem <- aut_ep_start_year <- aut_ep_end_year <-
-    dem_ep_start_year <- dem_ep_end_year <- aut_pre_ep_year <-
-    dem_pre_ep_year <- episode_id <- countries <- NULL
-  
+
+
+  year <- country_name <- priv_ep <- stat_ep <- overlap_eps <- country_text_id <- v2clstown_osp <-
+    ep_type <- episode <- vdem <- stat_ep_start_year <- stat_ep_end_year <-
+    priv_ep_start_year <- priv_ep_end_year <-
+    episode_id <- countries <- NULL
+
   eps_year <- eps %>%
     dplyr::filter(country_name == country, dplyr::between(year, min(years), max(years))) %>%
-    dplyr::filter(dem_ep == 1 | aut_ep == 1) 
-  
+    dplyr::filter(priv_ep == 1 | stat_ep == 1)
+
   if(nrow(eps_year)>1){
-    eps_year <- eps_year %>% 
-      dplyr::mutate(overlap_eps = ifelse(!is.na(aut_ep_id) & !is.na(dem_ep_id), "overlaps", NA)) %>% 
-      tidyr::pivot_longer(cols = c(aut_ep_id, dem_ep_id, overlap_eps), names_to = "ep_type", values_to = "episode") %>%
-      dplyr::select(country_name, country_text_id, year, v2x_polyarchy, ep_type, episode,
-                    aut_ep_start_year, aut_ep_end_year, aut_ep_outcome,
-                    dem_ep_start_year, dem_ep_end_year,
-                    aut_pre_ep_year, dem_pre_ep_year, dem_ep_outcome,
-                   aut_ep_censored, dem_ep_censored) %>%
-      dplyr::filter((ep_type == "dem_ep_id" & dem_pre_ep_year == 0) |
-                      (ep_type == "aut_ep_id" & aut_pre_ep_year == 0) |
-                      ep_type == "overlaps" & aut_pre_ep_year == 0 & dem_pre_ep_year == 0) %>%
+    eps_year <- eps_year %>%
+      dplyr::mutate(overlap_eps = ifelse(!is.na(stat_ep_id) & !is.na(priv_ep_id), "overlaps", NA)) %>%
+      tidyr::pivot_longer(cols = c(stat_ep_id, priv_ep_id, overlap_eps), names_to = "ep_type", values_to = "episode") %>%
+      dplyr::select(country_name, country_text_id, year, v2clstown_osp, ep_type, episode,
+                    stat_ep_start_year, stat_ep_end_year, stat_ep_outcome,
+                    priv_ep_start_year, priv_ep_end_year, priv_ep_outcome,
+                   stat_ep_censored, priv_ep_censored) %>%
       drop_na(episode) %>%
       group_by(year) %>%
       mutate(overlap_eps = n(),
-             outcome_dem_ep = case_when(dem_ep_outcome == 6 ~ get_label("outcome_censored", lang), 
-                                        dem_ep_censored == 1 ~ get_label("outcome_censored", lang),
-                                        dem_ep_outcome == 1 ~ get_label("outcome_dem_transition", lang),
-                                        dem_ep_outcome == 2 ~ get_label("outcome_dem_preempted", lang),
-                                        dem_ep_outcome == 3 ~ get_label("outcome_dem_stabilized", lang),
-                                        dem_ep_outcome == 4 ~ get_label("outcome_dem_reverted", lang),
-                                        dem_ep_outcome == 5 ~ get_label("outcome_dem_deepened", lang),
+             outcome_priv_ep = case_when(priv_ep_outcome == 6 ~ get_label("outcome_censored", lang),
+                                        priv_ep_censored == 1 ~ get_label("outcome_censored", lang),
+                                        priv_ep_outcome == 1 ~ get_label("outcome_priv_transition", lang),
+                                        priv_ep_outcome == 2 ~ get_label("outcome_priv_preempted", lang),
+                                        priv_ep_outcome == 3 ~ get_label("outcome_priv_stabilized", lang),
+                                        priv_ep_outcome == 4 ~ get_label("outcome_priv_reverted", lang),
+                                        priv_ep_outcome == 5 ~ get_label("outcome_priv_deepened", lang),
                                         T ~ NA_character_),
-             outcome_aut_ep = case_when(aut_ep_outcome == 6 ~ get_label("outcome_censored", lang),
-                                        aut_ep_censored == 1 ~ get_label("outcome_censored", lang),
-                                        aut_ep_outcome == 1 ~ get_label("outcome_aut_breakdown", lang),
-                                        aut_ep_outcome == 2 ~ get_label("outcome_aut_preempted", lang),
-                                        aut_ep_outcome == 3 ~ get_label("outcome_aut_diminished", lang),
-                                        aut_ep_outcome == 4 ~ get_label("outcome_aut_averted", lang),
-                                        aut_ep_outcome == 5 ~ get_label("outcome_aut_regressed", lang),
+             outcome_stat_ep = case_when(stat_ep_outcome == 6 ~ get_label("outcome_censored", lang),
+                                        stat_ep_censored == 1 ~ get_label("outcome_censored", lang),
+                                        stat_ep_outcome == 1 ~ get_label("outcome_stat_breakdown", lang),
+                                        stat_ep_outcome == 2 ~ get_label("outcome_stat_preempted", lang),
+                                        stat_ep_outcome == 3 ~ get_label("outcome_stat_diminished", lang),
+                                        stat_ep_outcome == 4 ~ get_label("outcome_stat_averted", lang),
+                                        stat_ep_outcome == 5 ~ get_label("outcome_stat_regressed", lang),
                                         T ~ NA_character_),
-             episode_id = ifelse(ep_type == "aut_ep_id", paste0("AUT: ", aut_ep_start_year, "-", aut_ep_end_year, " ", outcome_aut_ep), episode),
-             episode_id = ifelse(ep_type == "dem_ep_id", paste0("DEM: ", dem_ep_start_year, "-", dem_ep_end_year, " ", outcome_dem_ep), episode_id)) %>%
+             episode_id = ifelse(ep_type == "stat_ep_id", paste0("STAT: ", stat_ep_start_year, "-", stat_ep_end_year, " ", outcome_stat_ep), episode),
+             episode_id = ifelse(ep_type == "priv_ep_id", paste0("PRIV: ", priv_ep_start_year, "-", priv_ep_end_year, " ", outcome_priv_ep), episode_id)) %>%
       ungroup()
-    
-    polyarchy <- eps %>%
+
+    soi_data <- eps %>%
       filter(country_name == country, between(year, min(years), max(years))) %>%
       ungroup() %>%
-      select(year, v2x_polyarchy)
-    
+      select(year, v2clstown_osp)
+
     if(max(eps_year$overlap_eps) > 1) {
       print(get_label("warning_overlap", lang))
     }
-    
+
     p <-   ggplot2::ggplot() +
-      geom_line(data = eps_year, aes(group = episode_id, color = episode_id, linetype = ep_type,x = year, y = v2x_polyarchy)) +
-      geom_line(data = polyarchy, aes(x = year, y = v2x_polyarchy), alpha = 0.35) +
+      geom_line(data = eps_year, aes(group = episode_id, color = episode_id, linetype = ep_type, x = year, y = v2clstown_osp)) +
+      geom_line(data = soi_data, aes(x = year, y = v2clstown_osp), alpha = 0.35) +
       scale_colour_grey(breaks = levels(factor(eps_year$episode_id[eps_year$episode_id!="overlaps"])),
                         name = get_label("episode", lang), start = 0.01, end = 0.01) +
-      scale_linetype_manual(name = get_label("episode_type", lang), breaks = c("aut_ep_id", "dem_ep_id", "overlaps"),
-                            labels = c(get_label("autocratization", lang), get_label("democratization", lang), get_label("overlap", lang)),
+      scale_linetype_manual(name = get_label("episode_type", lang), breaks = c("stat_ep_id", "priv_ep_id", "overlaps"),
+                            labels = c(get_label("statization", lang), get_label("privatization", lang), get_label("overlap", lang)),
                             values = c("dashed", "dotted", "solid")) +
       scale_x_continuous(breaks = seq(round(min(years) / 10) * 10, round(max(years) / 10) * 10, 10)) +
-      xlab(get_label("year", lang)) +  ylab(get_label("edi", lang)) + ylim(0,1) +
+      xlab(get_label("year", lang)) +  ylab(get_label("soi", lang)) + ylim(0, 4) +
       theme_bw() +
       guides(color = guide_legend(override.aes = list(size = 0))) +
       ggtitle(get_country_name(country, lang))
-    
-    if (isTRUE(length(which(eps_year$ep_type == "dem_ep_id")) > 0)){
-      
-      if (any(eps_year$year%in%c(eps_year$dem_ep_start_year))) {
-        p <- p +  geom_point(data = eps_year, aes(x = year, y = ifelse(year == dem_ep_start_year, v2x_polyarchy, NA)), shape = 2, alpha = 0.75) 
-        
+
+    if (isTRUE(length(which(eps_year$ep_type == "priv_ep_id")) > 0)){
+
+      if (any(eps_year$year%in%c(eps_year$priv_ep_start_year))) {
+        p <- p +  geom_point(data = eps_year, aes(x = year, y = ifelse(year == priv_ep_start_year, v2clstown_osp, NA)), shape = 2, alpha = 0.75)
+
       } else {
         p
       }
-      
-      if (any(eps_year$year%in%c(eps_year$dem_ep_end_year))) {
-        p <- p +geom_point(data = eps_year, aes(x = year, y = ifelse(year == dem_ep_end_year, v2x_polyarchy, NA)), shape = 17, alpha = 0.75)
+
+      if (any(eps_year$year%in%c(eps_year$priv_ep_end_year))) {
+        p <- p + geom_point(data = eps_year, aes(x = year, y = ifelse(year == priv_ep_end_year, v2clstown_osp, NA)), shape = 17, alpha = 0.75)
       } else {
         p
       }
     }
-    
-    if (isTRUE(length(which(eps_year$ep_type == "aut_ep_id")) > 0)) {
-      
-      if (any(eps_year$year%in%c(eps_year$aut_ep_start_year))){
-        p <- p +  geom_point(data = eps_year, aes(x = year, y = ifelse(year == aut_ep_start_year, v2x_polyarchy, NA)), shape = 1, alpha = 0.75) 
+
+    if (isTRUE(length(which(eps_year$ep_type == "stat_ep_id")) > 0)) {
+
+      if (any(eps_year$year%in%c(eps_year$stat_ep_start_year))){
+        p <- p +  geom_point(data = eps_year, aes(x = year, y = ifelse(year == stat_ep_start_year, v2clstown_osp, NA)), shape = 1, alpha = 0.75)
       } else {
         p
       }
-      if (any(eps_year$year%in%c(eps_year$aut_ep_end_year))){
-        p<- p+ geom_point(data = eps_year, aes(x = year, y = ifelse(year == aut_ep_end_year, v2x_polyarchy, NA)), shape = 16, alpha = 0.75)
+      if (any(eps_year$year%in%c(eps_year$stat_ep_end_year))){
+        p<- p+ geom_point(data = eps_year, aes(x = year, y = ifelse(year == stat_ep_end_year, v2clstown_osp, NA)), shape = 16, alpha = 0.75)
       } else {
         p
       }
     }
     p
-    
-    
+
+
   } else {
     print(get_label("no_episodes", lang))
-    
-    polyarchy <- eps %>%
+
+    soi_data <- eps %>%
       filter(country_name == country, between(year, min(years), max(years))) %>%
       ungroup() %>%
-      select(year, v2x_polyarchy)
-    
-    p <-ggplot2::ggplot() +
-      geom_line(data = polyarchy, aes(x = as.numeric(year), y = v2x_polyarchy), alpha = 0.35) +
+      select(year, v2clstown_osp)
+
+    p <- ggplot2::ggplot() +
+      geom_line(data = soi_data, aes(x = as.numeric(year), y = v2clstown_osp), alpha = 0.35) +
       scale_x_continuous(breaks = seq(round(min(years) / 10) * 10, round(max(years) / 10) * 10, 10)) +
-      xlab(get_label("year", lang)) +  ylab(get_label("edi", lang)) + ylim(0,1) +
+      xlab(get_label("year", lang)) +  ylab(get_label("soi", lang)) + ylim(0, 4) +
       theme_bw() +
       ggtitle(get_country_name(country, lang))
-    
+
     p
-    
+
   }
 }
-
-
-
-

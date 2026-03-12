@@ -1,1 +1,26 @@
+# R
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj
+
+# Compiled files
+*.o
+*.so
+*.dll
+
+# Package build artifacts
+*.tar.gz
+*.zip
+/doc/
+/Meta/
+
+# Data-raw (internal scripts only)
+data-raw/
+
+# Test artifacts
 my_tests/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,4 +1,4 @@
 library(testthat)
 library(vdemdata)
 
-test_check("vdemdata")
+test_check("ESOT")

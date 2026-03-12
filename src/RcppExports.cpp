@@ -10,9 +10,9 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// find_seqs_aut
-NumericVector find_seqs_aut(NumericVector v, NumericVector r, NumericVector t, double start_incl, double year_turn, double cum_turn, int tolerance);
-RcppExport SEXP _ERT_find_seqs_aut(SEXP vSEXP, SEXP rSEXP, SEXP tSEXP, SEXP start_inclSEXP, SEXP year_turnSEXP, SEXP cum_turnSEXP, SEXP toleranceSEXP) {
+// find_seqs_priv
+NumericVector find_seqs_priv(NumericVector v, NumericVector r, NumericVector t, double start_incl, double year_turn, double cum_turn, int tolerance);
+RcppExport SEXP _ESOT_find_seqs_priv(SEXP vSEXP, SEXP rSEXP, SEXP tSEXP, SEXP start_inclSEXP, SEXP year_turnSEXP, SEXP cum_turnSEXP, SEXP toleranceSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -23,13 +23,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type year_turn(year_turnSEXP);
     Rcpp::traits::input_parameter< double >::type cum_turn(cum_turnSEXP);
     Rcpp::traits::input_parameter< int >::type tolerance(toleranceSEXP);
-    rcpp_result_gen = Rcpp::wrap(find_seqs_aut(v, r, t, start_incl, year_turn, cum_turn, tolerance));
+    rcpp_result_gen = Rcpp::wrap(find_seqs_priv(v, r, t, start_incl, year_turn, cum_turn, tolerance));
     return rcpp_result_gen;
 END_RCPP
 }
-// find_seqs_dem
-NumericVector find_seqs_dem(NumericVector v, NumericVector r, NumericVector t, double start_incl, double year_turn, double cum_turn, int tolerance);
-RcppExport SEXP _ERT_find_seqs_dem(SEXP vSEXP, SEXP rSEXP, SEXP tSEXP, SEXP start_inclSEXP, SEXP year_turnSEXP, SEXP cum_turnSEXP, SEXP toleranceSEXP) {
+// find_seqs_stat
+NumericVector find_seqs_stat(NumericVector v, NumericVector r, NumericVector t, double start_incl, double year_turn, double cum_turn, int tolerance);
+RcppExport SEXP _ESOT_find_seqs_stat(SEXP vSEXP, SEXP rSEXP, SEXP tSEXP, SEXP start_inclSEXP, SEXP year_turnSEXP, SEXP cum_turnSEXP, SEXP toleranceSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -40,18 +40,18 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type year_turn(year_turnSEXP);
     Rcpp::traits::input_parameter< double >::type cum_turn(cum_turnSEXP);
     Rcpp::traits::input_parameter< int >::type tolerance(toleranceSEXP);
-    rcpp_result_gen = Rcpp::wrap(find_seqs_dem(v, r, t, start_incl, year_turn, cum_turn, tolerance));
+    rcpp_result_gen = Rcpp::wrap(find_seqs_stat(v, r, t, start_incl, year_turn, cum_turn, tolerance));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_ERT_find_seqs_aut", (DL_FUNC) &_ERT_find_seqs_aut, 7},
-    {"_ERT_find_seqs_dem", (DL_FUNC) &_ERT_find_seqs_dem, 7},
+    {"_ESOT_find_seqs_priv", (DL_FUNC) &_ESOT_find_seqs_priv, 7},
+    {"_ESOT_find_seqs_stat", (DL_FUNC) &_ESOT_find_seqs_stat, 7},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_ERT(DllInfo *dll) {
+RcppExport void R_init_ESOT(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }
